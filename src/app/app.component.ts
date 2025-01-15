@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // Método chamado ao selecionar uma data
+  // Chamado ao selecionar uma data
   onDateSelect(date: Date) {
     if (date) {
       this.selectedDates = [date];
