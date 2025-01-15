@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import {
-  BsDatepickerConfig,
-  DatepickerDateCustomClasses,
-} from 'ngx-bootstrap/datepicker';
+import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
 import { defineLocale } from 'ngx-bootstrap/chronos';
 import { ptBrLocale } from 'ngx-bootstrap/locale';
 
@@ -16,70 +13,57 @@ defineLocale('pt-br', ptBrLocale);
 })
 export class AppComponent implements OnInit {
   myForm: FormGroup;
-  selectedDates: Date[] = [];
-  dateCustomClasses: DatepickerDateCustomClasses[] = [];
+  selectedDates: Date[] = []; // Armazena as datas selecionadas
 
-  // Configuração do Datepicker
-  bsConfig: Partial<BsDatepickerConfig> = {
+  bsConfig: Partial<BsDatepickerConfig> & { locale?: string } = {
     containerClass: 'theme-green',
     showWeekNumbers: false,
-    adaptivePosition: true,
-    isAnimated: false,
     selectFromOtherMonth: true,
     locale: 'pt-br',
-  } as Partial<BsDatepickerConfig> & { locale?: string };
+    showTodayButton: true,
+  };
 
   constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
     this.myForm = this.formBuilder.group({
-      date: null, // Usado apenas para vinculação ao componente
+      date: null, // Vinculado ao calendário
     });
-    this.updateDateCustomClasses();
   }
 
   // Método chamado ao clicar em uma data no calendário
   onDateSelect(selectedDate: Date) {
     if (selectedDate) {
-      const normalizedDate = this.normalizeDate(selectedDate);
+      const normalizedDate = this.normalizeDate(selectedDate); // Normaliza a data para evitar problemas de comparação
       const index = this.selectedDates.findIndex(
         (date) =>
           this.normalizeDate(date).getTime() === normalizedDate.getTime()
       );
 
       if (index === -1) {
-        // Adiciona a data, caso ela não esteja na lista
+        // Adiciona a data ao array
         this.selectedDates.push(normalizedDate);
       } else {
-        // Remove a data, caso ela já esteja na lista
+        // Remove a data do array
         this.selectedDates.splice(index, 1);
       }
-
-      this.updateDateCustomClasses(); // Atualiza as classes CSS
     }
   }
-  // Normaliza uma data para comparar apenas dia, mês e ano
+
+  // Normaliza uma data para comparação (remove hora, minuto, etc.)
   normalizeDate(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  // Atualiza as classes CSS das datas selecionadas
-  updateDateCustomClasses() {
-    this.dateCustomClasses = this.selectedDates.map((date) => ({
-      date,
-      classes: ['highlight-selected'], // Classe CSS para destacar as datas selecionadas
-    }));
-  }
-
-  // Remove uma data da lista ao clicar diretamente no botão "remover"
-  removeDate(date: Date) {
-    const index = this.selectedDates.findIndex(
-      (d) =>
-        this.normalizeDate(d).getTime() === this.normalizeDate(date).getTime()
+  // Verifica se uma data está selecionada
+  isDateSelected(date: Date): boolean {
+    const normalizedDate = this.normalizeDate(date);
+    return this.selectedDates.some(
+      (selectedDate) =>
+        this.normalizeDate(selectedDate).getTime() === normalizedDate.getTime()
     );
-    if (index !== -1) {
-      this.selectedDates.splice(index, 1);
-      this.updateDateCustomClasses(); // Atualiza as classes CSS
-    }
+  }
+  customDayClass(date: Date): string {
+    return this.isDateSelected(date) ? 'highlight-selected' : '';
   }
 }
