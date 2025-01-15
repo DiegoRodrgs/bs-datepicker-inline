@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
 import { defineLocale } from 'ngx-bootstrap/chronos';
@@ -20,10 +20,13 @@ export class AppComponent implements OnInit {
     showWeekNumbers: false,
     selectFromOtherMonth: true,
     locale: 'pt-br',
-    showTodayButton: true,
   };
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private renderer: Renderer2,
+    private el: ElementRef
+  ) {}
 
   ngOnInit() {
     this.myForm = this.formBuilder.group({
@@ -47,6 +50,9 @@ export class AppComponent implements OnInit {
         // Remove a data do array
         this.selectedDates.splice(index, 1);
       }
+
+      // Atualiza os destaques no calendário
+      this.updateCalendarHighlights();
     }
   }
 
@@ -55,15 +61,33 @@ export class AppComponent implements OnInit {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  // Verifica se uma data está selecionada
-  isDateSelected(date: Date): boolean {
-    const normalizedDate = this.normalizeDate(date);
-    return this.selectedDates.some(
-      (selectedDate) =>
-        this.normalizeDate(selectedDate).getTime() === normalizedDate.getTime()
-    );
-  }
-  customDayClass(date: Date): string {
-    return this.isDateSelected(date) ? 'highlight-selected' : '';
+  // Atualiza os destaques no calendário
+  updateCalendarHighlights() {
+    const calendarCells = this.el.nativeElement.querySelectorAll(
+      '.bs-datepicker .day'
+    ); // Seleciona todas as células do calendário
+
+    calendarCells.forEach((cell: HTMLElement) => {
+      const dayText = cell.textContent?.trim();
+      if (dayText) {
+        const cellDate = new Date(
+          new Date().getFullYear(), // Ano atual
+          new Date().getMonth(), // Mês atual
+          parseInt(dayText, 10) // Dia baseado no texto da célula
+        );
+
+        const isSelected = this.selectedDates.some(
+          (date) =>
+            this.normalizeDate(date).getTime() ===
+            this.normalizeDate(cellDate).getTime()
+        );
+
+        if (isSelected) {
+          this.renderer.addClass(cell, 'highlight-selected');
+        } else {
+          this.renderer.removeClass(cell, 'highlight-selected');
+        }
+      }
+    });
   }
 }
