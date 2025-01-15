@@ -1,7 +1,10 @@
 <form [formGroup]="myForm">
   <div class="row">
     <div class="col-xs-12 col-12 col-sm-6 col-md-4 form-group">
-      <bs-datepicker-inline formControlName="date" [bsConfig]="bsConfig" (bsValueChange)="onDateSelect($event)">
+      <bs-datepicker-inline
+        formControlName="date"
+        [bsConfig]="bsConfig"
+        (bsValueChange)="onDateSelect($event)">
       </bs-datepicker-inline>
       <br>
       <label>Data Selecionada</label>
