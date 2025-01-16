@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { BsDatepickerConfig } from 'ngx-bootstrap/datepicker';
+import {
+  BsDatepickerConfig,
+  DatepickerDateCustomClasses,
+  BsLocaleService,
+} from 'ngx-bootstrap/datepicker';
 import { defineLocale } from 'ngx-bootstrap/chronos';
 import { ptBrLocale } from 'ngx-bootstrap/locale';
 
@@ -14,20 +18,24 @@ defineLocale('pt-br', ptBrLocale);
 export class AppComponent implements OnInit {
   myForm: FormGroup;
   selectedDates: Date[] = []; // Armazena as datas selecionadas
+  dateCustomClasses: DatepickerDateCustomClasses[] = [];
 
-  bsConfig: Partial<BsDatepickerConfig> & { locale?: string } = {
+  bsConfig: Partial<BsDatepickerConfig> = {
     containerClass: 'theme-green',
     showWeekNumbers: false,
     selectFromOtherMonth: true,
-    locale: 'pt-br',
-    showTodayButton: true,
   };
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private bsLocaleService: BsLocaleService
+  ) {
+    this.bsLocaleService.use('pt-br');
+  }
 
   ngOnInit() {
     this.myForm = this.formBuilder.group({
-      date: null, // Vinculado ao calendário
+      date: null, // Opcional: Campo de exemplo para referência
     });
   }
 
@@ -47,6 +55,9 @@ export class AppComponent implements OnInit {
         // Remove a data do array
         this.selectedDates.splice(index, 1);
       }
+
+      // Atualiza as classes customizadas
+      this.updateDateCustomClasses();
     }
   }
 
@@ -55,15 +66,11 @@ export class AppComponent implements OnInit {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  // Verifica se uma data está selecionada
-  isDateSelected(date: Date): boolean {
-    const normalizedDate = this.normalizeDate(date);
-    return this.selectedDates.some(
-      (selectedDate) =>
-        this.normalizeDate(selectedDate).getTime() === normalizedDate.getTime()
-    );
-  }
-  customDayClass(date: Date): string {
-    return this.isDateSelected(date) ? 'highlight-selected' : '';
+  // Atualiza as classes customizadas para as datas selecionadas
+  updateDateCustomClasses() {
+    this.dateCustomClasses = this.selectedDates.map((date) => ({
+      date,
+      classes: ['highlight-selected'],
+    }));
   }
 }
